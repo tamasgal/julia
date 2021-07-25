@@ -143,6 +143,7 @@ Standard library changes
 * `replace(::String)` now accepts multiple patterns, which will be applied left-to-right simultaneously,
   so only one pattern will be applied to any character, and the patterns will only be applied to the input
   text, not the replacements ([#40484]).
+* New `replace` methods to replace elements of a `Tuple` ([#38216]).
 
 #### Package Manager
 
@@ -311,6 +312,7 @@ Tooling Improvements
 [#37971]: https://github.com/JuliaLang/julia/issues/37971
 [#37978]: https://github.com/JuliaLang/julia/issues/37978
 [#38041]: https://github.com/JuliaLang/julia/issues/38041
+[#38216]: https://github.com/JuliaLang/julia/issues/38216
 [#38379]: https://github.com/JuliaLang/julia/issues/38379
 [#38438]: https://github.com/JuliaLang/julia/issues/38438
 [#38574]: https://github.com/JuliaLang/julia/issues/38574
