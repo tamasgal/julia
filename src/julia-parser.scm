@@ -1996,6 +1996,8 @@
              (take-token s)
              '())
             ((eqv? t #\;)
+             (if (ts:space? s)
+                 (error "unexpected \" \" inside [] expression"))
              (take-token s)
              (define (loop (n 1))
                (let ((c (read-char (ts:port s))))
