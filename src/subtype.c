@@ -2289,7 +2289,6 @@ static jl_value_t *intersect_var(jl_tvar_t *b, jl_value_t *a, jl_stenv_t *e, int
     if (bb->constraintkind == 0) {
         JL_GC_PUSH1(&ub);
         if (!jl_is_typevar(a) && try_subtype_in_env(bb->ub, a, e, 0, d)) {
-            set_bound(&bb->ub, ub, b, e);
             JL_GC_POP();
             return (jl_value_t*)b;
         }
@@ -2352,7 +2351,7 @@ static int var_occurs_inside(jl_value_t *v, jl_tvar_t *var, int inside, int want
 }
 
 // Caller might not have rooted `res`
-static jl_value_t *finish_unionall(jl_value_t *res JL_MAYBE_UNROOTED, jl_varbinding_t *vb, jl_stenv_t *e)
+static jl_value_t *finish_unionall(jl_value_t *res JL_MAYBE_UNROOTED, jl_varbinding_t *vb, jl_unionall_t *u, jl_stenv_t *e)
 {
     jl_value_t *varval = NULL;
     jl_tvar_t *newvar = vb->var;
@@ -2365,7 +2364,7 @@ static jl_value_t *finish_unionall(jl_value_t *res JL_MAYBE_UNROOTED, jl_varbind
         // given x<:T<:x, substitute x for T
         varval = vb->ub;
     }
-    else if (!vb->occurs_inv && is_leaf_bound(vb->ub)) {
+    else if (is_leaf_bound(vb->ub) && !var_occurs_invariant(u->body, u->var, 0)) {
         // replace T<:x with x in covariant position when possible
         varval = vb->ub;
     }
@@ -2554,7 +2553,7 @@ static jl_value_t *intersect_unionall_(jl_value_t *t, jl_unionall_t *u, jl_stenv
     }
     if (res != jl_bottom_type)
         // res is rooted by callee
-        res = finish_unionall(res, vb, e);
+        res = finish_unionall(res, vb, u, e);
     JL_GC_POP();
     return res;
 }
@@ -2977,9 +2976,9 @@ static jl_value_t *intersect(jl_value_t *x, jl_value_t *y, jl_stenv_t *e, int pa
                 else
                     lb = simple_join(xlb, ylb);
                 if (yy) {
-                    if (!subtype_by_bounds(lb, y, e))
+                    if (!reachable_var(lb, y, e))
                         yy->lb = lb;
-                    if (!subtype_by_bounds(y, ub, e))
+                    if (!reachable_var(ub, y, e))
                         yy->ub = ub;
                     assert(yy->ub != y);
                     assert(yy->lb != y);
